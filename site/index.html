@@ -1,0 +1,1342 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>小满</title>
+<link rel="icon" type="image/png" href="/icons/icon-192.png?v=2" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0A1E33" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="小满" />
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png?v=2" />
+<style>
+  :root{
+    --bg:#000; --panel:#1c1c1e; --panel2:#2c2c2e; --line:#2c2c2e;
+    --text:#f2f2f7; --sub:#8e8e93; --accent:#0a84ff; --ok:#30d158; --bad:#ff453a;
+    --bubble-in:#26262a; --bubble-out:#0a84ff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",system-ui,sans-serif;overscroll-behavior:none}
+  button{font:inherit;cursor:pointer;border:0;border-radius:10px;background:var(--panel2);color:var(--text);padding:10px 14px}
+  button:disabled{opacity:.5;cursor:default}
+  button.ghost{background:transparent;border:1px solid var(--line)}
+  button.sm{padding:7px 11px;font-size:13px;border-radius:8px}
+  input,textarea{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;width:100%}
+  input:focus,textarea:focus{border-color:#3a3a3c}
+  .hide{display:none!important}
+  .err{color:var(--bad);font-size:13px;margin-top:10px;white-space:pre-wrap}
+  .empty{color:var(--sub);font-size:13px;padding:12px 4px}
+
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 90% at 50% 18%,#12304f 0%,#0a1828 42%,#03060a 100%)}
+  #login .card{width:100%;max-width:360px;background:rgba(18,23,34,.82);border:1px solid rgba(212,175,105,.22);border-radius:22px;padding:26px 22px;backdrop-filter:blur(18px);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  #login .brandLogo{width:84px;height:84px;border-radius:20px;display:block;margin:0 auto 14px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+  #login h1{margin:0 0 6px;font-size:24px;text-align:center;letter-spacing:3px;font-weight:700}
+  #login p{color:var(--sub);font-size:13px;margin:0 0 20px;text-align:center}
+  #login label{display:block;font-size:12.5px;color:var(--sub);margin:14px 0 6px}
+  #login input{background:rgba(8,12,18,.8);border-color:rgba(148,163,184,.22);border-radius:12px}
+  #login button{margin-top:20px;background:var(--accent);color:#fff;font-weight:600;border-radius:12px}
+
+  #app{height:100%;display:flex;flex-direction:column;max-width:820px;margin:0 auto;position:relative;background:var(--bg)}
+  header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #1c1c1e;
+    position:sticky;top:0;background:rgba(10,10,11,.82);backdrop-filter:blur(20px) saturate(160%);z-index:5;min-height:48px}
+  #menuBtn{background:transparent;padding:6px 8px;font-size:18px;line-height:1;color:var(--accent)}
+  #sessTitle{font-size:17px;font-weight:600;flex:1;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;letter-spacing:.2px}
+  #stat{font-size:11.5px;color:var(--sub)}
+
+  #quoteBar{display:none;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid #1c1c1e;background:#0a0a0b;font-size:12px;color:#8e8e93;cursor:pointer}
+  #quoteBar.show{display:flex}
+  #quoteBar .qdot{width:6px;height:6px;border-radius:50%;background:#30d158;flex:0 0 6px}
+  #quoteBar .qdot.stale{background:#ff9f0a}
+  #quoteBar .qdot.bad{background:#ff453a}
+  #quoteBar .qnm{color:#f2f2f7;font-weight:600;max-width:38vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  #quoteBar .qpx{font-variant-numeric:tabular-nums;font-weight:600}
+  #quoteBar .qchg{font-variant-numeric:tabular-nums}
+  #quoteBar .qchg.up{color:#ff453a}.qchg.down{color:#30d158}
+  #quoteBar .qtm{margin-left:auto;font-size:11px;color:#8e8e93;white-space:nowrap}
+  #quoteBar .qx{background:transparent;border:0;color:#636366;font-size:14px;padding:0 2px}
+
+  #msgs{flex:1;overflow-y:auto;padding:14px 12px 96px;display:flex;flex-direction:column;gap:5px;-webkit-overflow-scrolling:touch;background:#000}
+  .msg{max-width:74%;padding:9px 13px;border-radius:18px;white-space:pre-wrap;word-break:break-word;position:relative;font-size:15.2px;line-height:1.44}
+  .msg.user{align-self:flex-end;background:var(--bubble-out);color:#fff;margin-top:8px}
+  .msg.assistant{align-self:flex-start;background:var(--bubble-in);color:#f2f2f7;margin-top:8px}
+  .msg.sys{align-self:center;background:transparent;color:var(--sub);font-size:12px;padding:2px 6px;max-width:92%;margin-top:6px}
+  .msg.assistant + .msg.assistant,.msg.user + .msg.user{margin-top:2px}
+  .msg.key{align-self:stretch;max-width:100%;margin-top:10px;background:linear-gradient(155deg,#10243a 0%,#0b1522 100%);border:1px solid #23415f;border-radius:16px;padding:11px 13px;color:#eaf2fb}
+  .msg.key .kh{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:600;color:#8fc4ff;letter-spacing:.5px}
+  .msg.key .kh .fold{background:transparent;border:0;color:#8fc4ff;font-size:11px;padding:0 2px}
+  .msg.key .kb{margin-top:6px;font-size:13.2px;line-height:1.62;color:#dbe8f6;white-space:pre-wrap}
+  .msg.key.collapsed .kb{display:none}
+  .msg.key .kb b{color:#fff}
+  .ansBlock{align-self:stretch;max-width:100%;background:transparent!important;padding:0!important;display:flex;flex-direction:column;gap:6px}
+  .ansBlock .keyCard{background:linear-gradient(155deg,#10243a 0%,#0b1522 100%);border:1px solid #23415f;border-radius:16px;padding:11px 13px;color:#eaf2fb}
+  .ansBlock .keyCard .kh{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#8fc4ff;letter-spacing:.5px}
+  .ansBlock .keyCard .kh .spk{float:none;margin:0 0 0 auto;font-size:12px}
+  .ansBlock .keyCard .kb{margin-top:6px;font-size:13.6px;line-height:1.66;color:#dbe8f6;white-space:pre-wrap}
+  .detailToggle{align-self:center;background:transparent;border:0;color:#64a8ff;font-size:11.5px;padding:6px 14px;margin:0 0 4px;letter-spacing:.2px;border-radius:9px;cursor:pointer}
+  .detailToggle:active{background:rgba(10,132,255,.12)}
+  #quoteBar .qdot.closed{background:#8e8e93}
+  .detailWrap{display:none;background:var(--bubble-in);border-radius:16px;padding:10px 13px;white-space:pre-wrap;word-break:break-word;font-size:14.2px;line-height:1.58;color:#d1d1d6;max-height:54vh;overflow:auto}
+  .spk{float:right;margin:-3px -6px 0 8px;background:transparent;padding:2px 3px;color:var(--sub);font-size:12px;opacity:.7}
+  .spk.on{color:var(--accent);opacity:1}
+
+  .think{align-self:flex-start;max-width:74%;margin-top:8px;padding:7px 11px;border-radius:14px;background:rgba(28,28,30,.82);border:1px solid #2a2a2d;color:#8e8e93;font-size:12px;line-height:1.5;overflow:hidden;transition:opacity .25s ease,transform .25s ease}
+  .think.out{opacity:0;transform:translateY(-4px)}
+  .think .th{display:flex;align-items:center;gap:6px;color:#aeaeb2;font-size:11.5px;margin-bottom:2px}
+  .think .pulse{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(10,132,255,.45);animation:tpulse 1.4s infinite}
+  @keyframes tpulse{0%{box-shadow:0 0 0 0 rgba(10,132,255,.45)}70%{box-shadow:0 0 0 6px rgba(10,132,255,0)}100%{box-shadow:0 0 0 0 rgba(10,132,255,0)}}
+  .think .tbody{max-height:54px;overflow:hidden;word-break:break-word;color:#8e8e93}
+
+  footer{padding:8px 10px calc(9px + env(safe-area-inset-bottom));border-top:1px solid #1c1c1e;
+    display:flex;gap:7px;align-items:flex-end;background:rgba(10,10,11,.9);backdrop-filter:blur(20px) saturate(160%)}
+  #inp{flex:1;resize:none;max-height:120px;min-height:36px;padding:8px 14px;line-height:1.4;background:#1c1c1e;border:1px solid #2c2c2e;border-radius:18px;font-size:15px}
+  #mic,#send{flex:0 0 34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%}
+  #mic{background:transparent;font-size:18px;color:var(--sub)}
+  #mic.live{background:#3a0d12;color:var(--bad);animation:pulse 1.4s infinite}
+  #send{background:var(--accent);color:#fff;font-weight:600;font-size:19px;line-height:1;transition:background .15s,transform .15s}
+  #send:active:not(:disabled){transform:scale(.94)}
+  #send.busy{background:var(--bad);font-size:15px}
+  #send.readonly{background:#2c2c2e;color:#8e8e93;font-size:13px}
+  @keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
+
+  #callBar{position:fixed;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    display:flex;justify-content:center;z-index:9;pointer-events:none}
+  #callBar .inner{background:#111821;border:1px solid #2a3546;border-radius:999px;padding:10px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.55);pointer-events:auto}
+  .wave{display:flex;gap:3px;align-items:center;height:20px}
+  .wave i{width:3px;height:10px;background:var(--accent);border-radius:2px;animation:wave 1s infinite}
+  .wave i:nth-child(2){animation-delay:.12s}.wave i:nth-child(3){animation-delay:.24s}
+  .wave i:nth-child(4){animation-delay:.36s}.wave i:nth-child(5){animation-delay:.48s}
+  @keyframes wave{0%,100%{height:8px}50%{height:18px}}
+  #hangUp{background:#7a1f2b;padding:8px 16px;border-radius:999px;font-size:13px}
+
+  #mask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none}
+  #drawer{position:fixed;top:0;bottom:0;left:0;width:min(84vw,340px);background:#11161d;border-right:1px solid var(--line);
+    z-index:21;transform:translateX(-102%);transition:transform .22s ease;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+  #drawer.open{transform:none}
+  #drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:14px}
+  #drawer .dh b{font-size:14px}
+  .sessList{overflow:auto;flex:1;padding:4px 8px}
+  .item{display:flex;align-items:center;gap:8px;padding:10px;border-radius:9px;font-size:13.5px;color:var(--sub)}
+  .item .t{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .item.on{background:var(--panel2);color:var(--text)}
+  .item .del{color:#7d8899;font-size:12px;padding:2px 6px;background:transparent}
+  #drawer .foot{border-top:1px solid var(--line);padding:10px 12px 10px;display:flex;gap:8px}
+  .tool{margin:6px 12px 14px;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .tool h3{margin:0 0 8px;font-size:12.5px;color:var(--sub);font-weight:600}
+  .row{display:flex;gap:8px}
+  .qbox{margin-top:10px;font-size:13px}
+  .lbl{color:var(--sub);font-size:12px}
+  .up{color:#e5534b}.down{color:#2ea043}
+
+  #bell{background:transparent;padding:6px 8px;font-size:17px;line-height:1;position:relative}
+  #bell .dot{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:#e5534b}
+  .msg.brief{align-self:stretch;max-width:100%;background:linear-gradient(160deg,#18202e,#141a24);border:1px solid #2b416d;border-radius:14px;padding:12px 14px}
+  .msg.brief h4{margin:0 0 7px;font-size:12.5px;color:#9db4ff;font-weight:600;display:flex;justify-content:space-between;gap:10px}
+  .msg.brief .bd{font-size:14px;line-height:1.68;white-space:pre-wrap}
+  .msg.brief .act{display:flex;gap:8px;margin-top:9px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="card">
+    <img class="brandLogo" src="/icons/icon-192.png?v=3" alt="小满" />
+    <h1>小满</h1>
+    <p>账号登录</p>
+    <label>用户名</label>
+    <input id="u" autocomplete="username" placeholder="请输入用户名" />
+    <label>密码</label>
+    <input id="p" type="password" autocomplete="current-password" placeholder="请输入密码" />
+    <button id="doLogin">登录</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <button id="menuBtn" title="会话">☰</button>
+    <span id="sessTitle">小满</span>
+    <button id="bell" title="今日简报">🔔</button>
+    <button id="installBtn" class="hide" title="安装到桌面">⬇</button>
+    <span id="stat"></span>
+  </header>
+
+  <div id="quoteBar"></div>
+
+  <div id="msgs"></div>
+
+  <footer>
+    <textarea id="inp" rows="1" placeholder="说点什么…"></textarea>
+    <button id="mic" title="语音通话">🎤</button>
+    <button id="send" title="发送">↑</button>
+  </footer>
+
+  <div id="callBar" class="hide">
+    <div class="inner">
+      <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+      <span id="callTip" style="font-size:13px;color:var(--sub)">在听你说</span>
+      <button id="hangUp">挂断</button>
+    </div>
+  </div>
+</div>
+
+<div id="mask"></div>
+<div id="drawer">
+  <div class="dh"><b>会话</b><button class="ghost sm" id="newSess">新对话</button></div>
+  <div class="sessList" id="sessList"></div>
+  <div class="tool">
+    <h3>行情（可选）</h3>
+    <div class="row"><input id="code" placeholder="600519" /><button class="sm" id="qbtn" style="flex:0 0 58px">查</button></div>
+    <div class="qbox" id="qbox"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="ghost sm" id="toCtx">带进对话</button>
+      <button class="ghost sm" id="addWatch">加自选</button>
+    </div>
+    <div class="row" style="margin-top:8px"><input id="bulk" placeholder="批量加自选：代码用逗号或空格隔开" /><button class="sm" id="bulkAdd" style="flex:0 0 46px">加</button></div>
+    <div id="watchBox" style="margin-top:8px"></div>
+  </div>
+  <div class="tool">
+    <h3>智能分析（自建服务）</h3>
+    <div class="row"><input id="acode" placeholder="600519" /><input id="acash" placeholder="本金" style="flex:0 0 76px" value="100000" /><button class="sm" id="abtn" style="flex:0 0 46px">算</button></div>
+    <div class="qbox" id="abox"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="ghost sm" id="aCtx">带进对话</button>
+    </div>
+  </div>
+  <div class="tool">
+    <h3>持仓（填了就能算浮动盈亏）</h3>
+    <div class="row"><input id="pcode" placeholder="代码" /><input id="pcost" placeholder="成本价" style="flex:0 0 74px" /><input id="pqty" placeholder="股数" style="flex:0 0 70px" /></div>
+    <div class="row" style="margin-top:7px"><button class="ghost sm" id="addPos">加一笔</button><button class="ghost sm" id="posRefresh">刷新盈亏</button></div>
+    <div id="posBox" style="margin-top:8px"></div>
+  </div>
+  <div class="foot"><button class="ghost sm" id="logout" style="width:100%">退出登录</button></div>
+</div>
+
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/3.11.1/cloudbase.full.js"></script>
+<script>
+const ENV = 'early-bovid-d6g90jqkt134e23d0';
+const PUB_KEY = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjZkZjFjNThkLWEyZGItNDRkOC05MmY3LWQ3Nzk1N2QyYmU3ZCJ9.eyJpc3MiOiJodHRwczovL2Vhcmx5LWJvdmlkLWQ2ZzkwanFrdDEzNGUyM2QwLmFwLXNoYW5naGFpLnRjYi1hcGkudGVuY2VudGNsb3VkYXBpLmNvbSIsInN1YiI6ImFub24iLCJhdWQiOiJlYXJseS1ib3ZpZC1kNmc5MGpxa3QxMzRlMjNkMCIsImV4cCI6NDA5ODg4ODc0OSwiaWF0IjoxNzk1MjA1NTQ5LCJub25jZSI6InN5dFBJZ2hRVHNPUnRCd3FxaFBfVXciLCJhdF9oYXNoIjoic3l0UElnaFFUc09SdEJ3cXFoUF9VdyIsIm5hbWUiOiJBbm9ueW1vdXMiLCJzY29wZSI6ImFub255bW91cyIsInByb2plY3RfaWQiOiJlYXJseS1ib3ZpZC1kNmc5MGpxa3QxMzRlMjNkMCIsIm1ldGEiOnsicGxhdGZvcm0iOiJQdWJsaXNoYWJsZUtleSJ9LCJyb2xlIjoiYW5vbiIsImlzX2Fub255bW91cyI6dHJ1ZSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiYW5vbnltb3VzIiwicHJvdmlkZXJzIjpbImFub255bW91cyJdfSwidXNlcl9tZXRhZGF0YSI6eyJuYW1lIjoiQW5vbnltb3VzIn0sInVzZXJfdHlwZSI6IiIsImNsaWVudF90eXBlIjoiY2xpZW50X3VzZXIiLCJpc19zeXN0ZW1fYWRtaW4iOmZhbHNlfQ.mFV8DljldHEZNkMdbX3KFQ4N0-AgnryLF_P2_NEkJT7AiEgcINe2Pbx2U_MHSdnxqjz4khKuTgnPxlCqRMokDLDFemcrHQodwKEBwSpqgXvPONGC1BCeBNSIkZ2nmSsJ9Vt0AKRXGI5Lv-sA4cEx2q6_Y4KZ4V4C8SUFr0GfoWZA7ckrxOmbdHh1SCP0UKxrPyNRaJZQ3Ftvp46tN_-v1CDy9hgovqnsHmPcOXtyt2I1_fzPt3fHzkWlxNM09ZjiqsYx6kgQ7QdFpzpKgCxXk0HNulAyUkL5khRZub12KARNOFz_wZPIC-IHjmo46z0hBUZCmp5wkXEt173ztwdsBA';
+const AI_URL = 'https://' + ENV + '.api.tcloudbasegateway.com/v1/ai/cloudbase/chat/completions';
+const FN_URL = 'https://' + ENV + '.api.tcloudbasegateway.com/v1/functions/stockapi/invoke';
+// 走 Vercel 时，把 CloudBase 网关请求改写为同源 /gw/，由 vercel.json 反向代理，绕过默认域名提示页与 CORS 限制
+(function(){
+  if(location.hostname.indexOf('vercel.app') < 0) return;
+  const GW = 'https://' + ENV + '.api.tcloudbasegateway.com/';
+  const map = (u) => {
+    if (typeof u !== 'string' || u.indexOf(GW) !== 0) return u;
+    return '/api/gw?p=' + encodeURIComponent(u.slice(GW.length));
+  };
+  if(window.fetch){
+    const f = window.fetch.bind(window);
+    window.fetch = function(input, init){
+      if(typeof input === 'string') return f(map(input), init);
+      if(input && input.url){
+        const nu = map(input.url);
+        if(nu !== input.url) return f(new Request(nu, input), init);
+      }
+      return f(input, init);
+    };
+  }
+  const xo = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(m, u){
+    const a = Array.prototype.slice.call(arguments);
+    a[1] = map(u);
+    return xo.apply(this, a);
+  };
+})();
+const MODEL = 'hy3';
+const MAIN_TITLE = '主对话';
+
+const SYS_PROMPT = [
+  '你是「小满」，一个私人 AI 助手，用户主要拿你来问股票和市场，平时也跟你闲聊。',
+  '【看股票的时候】',
+  '1. 开头先用一句白话结论，再展开依据；顺序清楚，别绕。',
+  '2. 上下文里给了【实时行情】时，必须直接用里面的价格、涨跌幅、换手、PE 回答，绝对不许再说「看不到行情」；只有上下文完全没有行情数字时，才说「我这边看不到实时行情」，绝不编价格、涨跌幅、成交量、财报数、买卖点、机构目标价。',
+  '3. 涉及买卖，讲清前提和风险，不给「必涨」「现在满仓」这类指令。',
+  '4. 术语先用一句白话解释，再往下说；他知道的常识不用再科普。',
+  '5. 说清楚这是哪天的数据；非交易时段就说按上一交易日收盘看。',
+  '【个股、大盘、行情、交易类问题的回答结构】',
+  'A. 开头一句说明：你查了什么实时数据、数据时间；数据来自上下文，不许编。',
+  'B. 中间详细分析：现在的位置、涨跌和量能/换手、关键支撑压力、驱动逻辑、风险点。分小节，句子短，别写成论文。',
+  'C. 详细分析之后，另起一行写「【关键回答】」，下面用3到5条“-”开头的短句，给出最关键的结论、价位或风险，方便单独折叠查看。',
+  'D. 【关键回答】只放短结论，不要把详细分析整段复述一遍。',
+  'E. 闲聊、问候、简单问答不要用这个结构，也不要出现「【关键回答】」。',
+  '【平时聊天】',
+  '6. 像真人，简短，有温度，一般两三句就够。',
+  '7. 不知道就说不知道，不编事实、人名、新闻、日期。',
+  '8. 回答要能直接念出来：短句，少用符号、表格、编号，除非他明确要长内容。',
+  '9. 记得他的偏好（见下方记忆），自然地用上，别每次都复述一遍。',
+  '10. 他说方言或口音重，按意思理解，别纠正他的说法。'
+].join('\n');
+
+let app=null, auth=null, db=null, token=null, user=null;
+let sessions=[], curSess=null, mainSess=null, curQuote=null, busy=false, abortCtrl=null;
+
+const $ = (s)=>document.querySelector(s);
+const esc = (s)=>String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function createScopedRdbClient(){
+  async function execute(request){
+    if(!request.operation) return {data:null,error:{message:'未指定数据库操作'}};
+    const result = await callFn({ action:'rdb.query', query:request });
+    if(!result || !result.ok) return {data:null,error:{message:(result&&result.error)||'数据库请求失败'}};
+    return {data:result.data==null?null:result.data,error:null};
+  }
+  return {
+    from(table){
+      const request={table,filters:[]};
+      const builder={
+        select(columns='*'){
+          if(request.operation && request.operation!=='select') request.returning=true;
+          else request.operation='select';
+          request.columns=columns;
+          return this;
+        },
+        insert(data){ request.operation='insert'; request.data=data; return this; },
+        update(data){ request.operation='update'; request.data=data; return this; },
+        delete(){ request.operation='delete'; return this; },
+        eq(column,value){ request.filters.push({op:'eq',column,value}); return this; },
+        gte(column,value){ request.filters.push({op:'gte',column,value}); return this; },
+        order(column,options={}){
+          request.order={column,ascending:!options||options.ascending!==false};
+          return this;
+        },
+        limit(value){ request.limit=value; return this; },
+        then(resolve,reject){ return execute(request).then(resolve,reject); }
+      };
+      return builder;
+    }
+  };
+}
+
+function initSDK(){
+  if(app) return app;
+  const cb = (window.cloudbase && window.cloudbase.default) || window.cloudbase;
+  app = cb.init({ env: ENV, accessKey: PUB_KEY, region: 'ap-shanghai' });
+  auth = app.auth(); db = createScopedRdbClient();
+  window.auth = auth;
+  return app;
+}
+
+async function pickToken(){
+  const tries=[];
+  try{ tries.push(['getSession', await auth.getSession()]); }catch(e){}
+  try{ tries.push(['getAccessToken', await auth.getAccessToken()]); }catch(e){}
+  try{ tries.push(['getUser', await auth.getUser()]); }catch(e){}
+  const dig=(o)=> o && (o.access_token || (o.session&&o.session.access_token) || (o.data&&(o.data.access_token||(o.data.session&&o.data.session.access_token))));
+  for(const [,r] of tries){ const t=dig(r); if(t) return t; }
+  return localStorage.getItem('CB_AUTH_TOKEN') || null;
+}
+
+window.prepareIamSession = async ()=>{
+  initSDK();
+  token = await pickToken();
+  return Boolean(token);
+};
+
+window.signInForIam = async (username, password)=>{
+  initSDK();
+  const result = await auth.signInWithPassword({ username, password });
+  if(result && result.error) throw new Error(result.error.message || JSON.stringify(result.error));
+  token = await pickToken();
+  if(!token) throw new Error('登录成功但取不到 token');
+  try{ localStorage.setItem('CB_AUTH_TOKEN', token); }catch(e){}
+};
+
+// 真实改密：用目标账号自己的旧密码换发 sudo_token，再改密码；不影响当前登录会话
+window.changeCloudPwd = async (username, oldPwd, newPwd)=>{
+  const origin = 'https://' + ENV + '.api.tcloudbasegateway.com';
+  const req = async (path, method, body, tk) => {
+    const r = await fetch(origin + path, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(tk ? { Authorization: 'Bearer ' + tk } : {}) },
+      body: JSON.stringify(body),
+    });
+    const text = await r.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch (e) {}
+    if (!r.ok) {
+      const msg = data.error_description || data.message || data.error || data.code || text.slice(0, 160) || ('HTTP ' + r.status);
+      throw new Error(msg);
+    }
+    return data;
+  };
+  const u = String(username || '').trim();
+  if (!u) throw new Error('缺少用户名');
+  if (!oldPwd || !newPwd) throw new Error('旧密码和新密码都要填');
+  const s = await req('/auth/v1/signin', 'POST', { username: u, password: oldPwd });
+  if (!s.access_token) throw new Error('旧密码校验失败');
+  const sd = await req('/auth/v1/user/sudo', 'POST', { password: oldPwd }, s.access_token);
+  if (!sd.sudo_token) throw new Error('旧密码校验失败');
+  await req('/auth/v1/user/password', 'PATCH', { new_password: newPwd, sudo_token: sd.sudo_token }, s.access_token);
+  return { ok: true };
+};
+
+// ---------- 登录 ----------
+$('#doLogin').onclick = async ()=>{
+  const u=$('#u').value.trim(), p=$('#p').value, err=$('#loginErr');
+  err.textContent='';
+  if(!u||!p){ err.textContent='账号和密码都要填'; return; }
+  $('#doLogin').disabled=true; err.textContent='登录中…';
+  try{
+    initSDK();
+    const r = await auth.signInWithPassword({ username:u, password:p });
+    if(r && r.error) throw new Error(r.error.message||JSON.stringify(r.error));
+    token = await pickToken();
+    if(!token) throw new Error('登录成功但取不到 token');
+    try{ localStorage.setItem('CB_AUTH_TOKEN', token); }catch(e){}
+    $('#login').classList.add('hide'); $('#app').classList.remove('hide');
+    await boot();
+  }catch(e){ err.textContent = '登录失败：' + (e.message||e); }
+  finally{ $('#doLogin').disabled=false; }
+};
+
+// ---------- 启动 ----------
+async function boot(){
+  $('#stat').textContent='在线';
+  await loadSessions();
+  await ensureMain();
+  const isDebug = window.IamL2 && window.IamL2.currentUser && window.IamL2.currentUser.role === 'debug';
+  if(isDebug && !mainSess){
+    $('#sessTitle').textContent='调试台';
+    $('#stat').textContent='调试模式';
+    $('#msgs').innerHTML='<div class="msg sys">调试号仅用于行情、数据与回测，不参与对话。</div>';
+    return;
+  }
+  // 先让主对话开始加载，自选/简报放后台，不要挡住首屏
+  selectSession(mainSess || sessions[0]);
+  loadWatch().catch(e => console.warn('[watch] 加载失败', e));
+  initBrief(false).catch(e => console.warn('[brief] 加载失败', e));
+}
+
+async function prepareLegacyRdbData(){
+  if(!window.IamL2 || !window.IamL2.currentUser ||
+    window.IamL2.currentUser.role!=='owner') return;
+  const status=await callFn({action:'rdb.legacyStatus'});
+  if(!status || !status.ok) throw new Error((status&&status.error)||'无法检查旧数据迁移状态');
+  if(!status.needsLegacyClaim) return;
+  // 主账号首次登录自动把升级前未归属的旧记录收归自己名下（原先用 confirm，阻塞浏览器自动化）
+  const result=await callFn({action:'rdb.claimLegacy'}).catch(()=>({ok:false}));
+  if(!result || !result.ok) console.warn('[legacy] 归入跳过:', result&&result.error);
+}
+
+window.startAppAfterIamLogin = async ()=>{
+  // 先把主界面放出来，旧数据迁移放到后台，避免首次登录白屏好几秒
+  $('#login').classList.add('hide');
+  $('#app').classList.remove('hide');
+  $('#stat').textContent='加载中…';
+  $('#inp').disabled=true; $('#send').disabled=true;
+  $('#inp').placeholder='正在加载会话…';
+  $('#msgs').innerHTML='<div class="msg sys">正在加载…</div>';
+  try{
+    prepareLegacyRdbData().catch(e=>console.warn('[legacy] 数据准备跳过:', e && e.message ? e.message : e));
+  }catch(e){
+    console.warn('[legacy] 数据准备跳过:', e && e.message ? e.message : e);
+  }
+  await boot();
+  $('#inp').disabled=false; $('#send').disabled=false;
+  $('#inp').placeholder='说点什么…';
+};
+
+async function loadSessions(){
+  const { data } = await db.from('sessions').select('*').order('created_at',{ascending:true});
+  sessions = data||[];
+  renderSessions();
+}
+async function ensureMain(){
+  mainSess = sessions.find(s=>s.title===MAIN_TITLE) || null;
+  if(mainSess) return;
+  if(window.IamL2 && window.IamL2.currentUser && window.IamL2.currentUser.role === 'debug') return;
+  const id = (crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2));
+  const row = { id, title: MAIN_TITLE };
+  const { error } = await db.from('sessions').insert(row);
+  if(error){ addBubble('sys','建主对话失败：'+(error.message||'未知')); return; }
+  mainSess = row; sessions.unshift(row); renderSessions();
+}
+function renderSessions(){
+  const box=$('#sessList'); box.innerHTML='';
+  const list = sessions.slice().sort((a,b)=> (a.title===MAIN_TITLE?-1:b.title===MAIN_TITLE?1:0));
+  list.forEach(s=>{
+    const main = s.title===MAIN_TITLE;
+    const d=document.createElement('div'); d.className='item'+(curSess&&curSess.id===s.id?' on':'');
+    d.innerHTML = '<span class="t">'+esc(s.title||'未命名')+'</span>'+(main?'<span class="pin">🔒</span>':'<button class="del">删</button>');
+    d.onclick = (e)=>{ if(e.target.classList.contains('del')) return; selectSession(s); closeDrawer(); };
+    const del = d.querySelector('.del');
+    if(del) del.onclick = async (e)=>{
+      e.stopPropagation();
+      if(!confirm('删除这个会话？聊过的话会先存进记忆。')) return;
+      await digest(s);
+      await db.from('sessions').delete().eq('id', s.id);
+      if(curSess && curSess.id===s.id) selectSession(mainSess);
+      await loadSessions();
+    };
+    box.appendChild(d);
+  });
+}
+async function newSession(){
+  const id = (crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2));
+  const row={ id, title:'新对话 '+new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) };
+  const { error } = await db.from('sessions').insert(row);
+  if(error){ addBubble('sys','建会话失败：'+(error.message||'未知')); return; }
+  await loadSessions(); selectSession(row); closeDrawer();
+}
+$('#newSess').onclick = newSession;
+
+let leaveTimer=null;
+async function selectSession(s){
+  if(!s) return;
+  if(curSess && curSess.id!==s.id){ digest(curSess); }
+  curSess = s; renderSessions();
+  $('#sessTitle').textContent = s.title===MAIN_TITLE ? '小满' : (s.title||'未命名');
+  await loadMessages();
+}
+async function loadMessages(){
+  const box=$('#msgs');
+  if(!curSess){ box.innerHTML=''; return; }
+  box.innerHTML='<div class="msg sys">正在加载…</div>';
+  const { data } = await db.from('messages').select('*').eq('session_id',curSess.id).order('id',{ascending:true});
+  box.innerHTML='';
+  (data||[]).forEach(m=>{ if(m.role!=='system') addBubble(m.role==='user'?'user':'assistant', m.content, true); });
+  const lastCode=[...(data||[])].reverse().map(m=>(String(m.content||'').match(/\b(\d{6})\b/)||[])[1]).find(Boolean);
+  if(lastCode) setTimeout(()=>trackQuote(lastCode,false),1200); else stopQuoteTracking();
+  const unread = (curSess.title===MAIN_TITLE && briefRow && !briefRow.read) ? await renderBriefTop() : false;
+  if(!unread && curSess.title===MAIN_TITLE) renderBriefTop();
+  if(unread) $('#msgs').scrollTop=0; else scrollBottom();
+}
+function splitKeyAnswer(text){
+  const marker='【关键回答】';
+  const raw=String(text||'');
+  const i=raw.indexOf(marker);
+  if(i<0) return { main:raw, key:'' };
+  return { main:raw.slice(0,i).trim(), key:raw.slice(i+marker.length).trim() };
+}
+function cleanDetail(t){
+  return String(t||'')
+    .replace(/\*\*/g,'')
+    .replace(/^\s*#{1,6}\s*/gm,'')
+    .replace(/(^|\n)\s*(?:[A-E]\s*[.、:：]\s*)?(?:中间)?详细分析\s*[:：]?\s*(?=\n|$)/g,'$1')
+    .replace(/(^|\n)\s*[A-E]\s*[.、:：]\s*(?=\S)/g,'$1')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+function addKeyBubble(keyText){
+  const key=String(keyText||'').trim();
+  if(!key) return null;
+  const d=document.createElement('div'); d.className='msg key';
+  const h=document.createElement('div'); h.className='kh';
+  const t=document.createElement('span'); t.textContent='关键回答';
+  const btn=document.createElement('button'); btn.className='fold'; btn.textContent='收起';
+  h.appendChild(t); h.appendChild(btn);
+  const b=document.createElement('div'); b.className='kb'; b.textContent=key;
+  d.appendChild(h); d.appendChild(b);
+  btn.onclick=()=>{
+    const collapsed=d.classList.toggle('collapsed');
+    btn.textContent=collapsed?'展开':'收起';
+  };
+  $('#msgs').appendChild(d); scrollBottom();
+  return d;
+}
+function addAnswerBlock(main,key,muted){
+  const d=document.createElement('div'); d.className='msg assistant ansBlock';
+  const kc=document.createElement('div'); kc.className='keyCard';
+  const h=document.createElement('div'); h.className='kh';
+  const dot=document.createElement('span'); dot.textContent='◆'; dot.style.color='#ffd166';
+  const t=document.createElement('span'); t.textContent='关键回答';
+  const kb=document.createElement('div'); kb.className='kb'; kb.textContent=String(key||'').trim();
+  h.appendChild(dot); h.appendChild(t);
+  if(!muted){ const spk=document.createElement('button'); spk.className='spk'; spk.textContent='🔊'; spk.title='朗读'; spk.style.marginLeft='auto'; spk.onclick=()=>{ if(spk.classList.contains('on')) stopSpeak(); else speak((key||'')+'\n'+(main||''),spk); }; h.appendChild(spk); }
+  kc.appendChild(h); kc.appendChild(kb);
+  d.appendChild(kc);
+  if(main && main!==key){
+    const tg=document.createElement('button'); tg.className='detailToggle'; tg.textContent='展开查看详情';
+    const det=document.createElement('div'); det.className='detailWrap'; det.textContent=cleanDetail(main);
+    tg.onclick=()=>{
+      const open=det.style.display!=='block';
+      det.style.display=open?'block':'none';
+      tg.textContent=open?'收起详情':'展开查看详情';
+      if(open) setTimeout(()=>{ try{ det.scrollIntoView({block:'nearest'}); scrollBottom(); }catch(e){} },60);
+    };
+    d.appendChild(tg); d.appendChild(det);
+  }
+  $('#msgs').appendChild(d); scrollBottom();
+  return d;
+}
+function addBubble(kind,text,muted){
+  let tailKey='';
+  if(kind==='assistant'){
+    const parts=splitKeyAnswer(text);
+    text=parts.main; tailKey=parts.key;
+  }
+  if(kind==='assistant' && tailKey) return addAnswerBlock(text,tailKey,muted);
+  const d=document.createElement('div'); d.className='msg '+kind;
+  const sp=document.createElement('span'); sp.textContent=text; d.appendChild(sp);
+  if(kind==='assistant' && !muted){
+    const b=document.createElement('button'); b.className='spk'; b.textContent='🔊'; b.title='朗读';
+    b.onclick=()=>{ if(b.classList.contains('on')) stopSpeak(); else speak(text, b); }; d.appendChild(b);
+  }
+  $('#msgs').appendChild(d); scrollBottom();
+  return d;
+}
+function scrollBottom(){ const m=$('#msgs'); if(!m) return; m.scrollTop=m.scrollHeight; }
+window.addEventListener('resize',()=>setTimeout(scrollBottom,260));
+if(window.visualViewport) window.visualViewport.addEventListener('resize',()=>setTimeout(scrollBottom,260));
+
+// 实时行情跟踪条：当前对话出现股票代码就跟踪，15 秒刷新，休市 60 秒
+let trackedCode=null, trackedQuote=null, quoteTimer=null;
+function stopQuoteTracking(){
+  trackedCode=null; trackedQuote=null; clearTimeout(quoteTimer); quoteTimer=null;
+  const b=$('#quoteBar'); if(b){ b.className=''; b.innerHTML=''; }
+}
+function renderQuoteBar(q,err){
+  const b=$('#quoteBar'); if(!b) return;
+  if(!trackedCode){ b.className=''; b.innerHTML=''; return; }
+  if(!q){
+    b.className='show';
+    b.innerHTML='<span class="qdot bad"></span><span class="qnm">'+esc(trackedCode)+'</span><span>行情连接失败，点此重试</span><span class="qtm">↻</span>';
+    b.onclick=()=>trackQuote(trackedCode);
+    return;
+  }
+  const up=(q.chgPct||0)>0, down=(q.chgPct||0)<0;
+  const mt=q.marketTime||'';
+  const today=new Date(Date.now()+8*3600000).toISOString().slice(0,10);
+  const tm=mt? (mt.slice(0,10)===today?mt.slice(11,19):mt.slice(5,16)) : '时间未知';
+  let state='实时', dot='';
+  if(q.stale){
+    const same=mt.slice(0,10)===today;
+    const hm=same?Number(mt.slice(11,13))*60+Number(mt.slice(14,16)):0;
+    if(same && hm>=900){ state='已收盘'; dot='closed'; }
+    else if(same && hm<570){ state='盘前'; dot='closed'; }
+    else { state='延迟'; dot='stale'; }
+  }
+  const sig=up?'+':'';
+  b.className='show';
+  b.innerHTML='<span class="qdot '+dot+'"></span>'+
+    '<span class="qnm">'+esc(q.name||'')+' '+esc(q.code||trackedCode)+'</span>'+
+    '<span class="qpx">'+esc(String(q.price))+'</span>'+
+    '<span class="qchg '+(up?'up':down?'down':'')+'">'+sig+esc(String(q.chgPct==null?'--':q.chgPct))+'%</span>'+
+    '<span class="qtm">'+esc(tm)+' · '+state+'</span>'+
+    '<button class="qx" title="关闭行情跟踪">×</button>';
+  b.onclick=(e)=>{ if(e.target && e.target.classList && e.target.classList.contains('qx')){ stopQuoteTracking(); } else { trackQuote(trackedCode); } };
+}
+async function trackQuote(code,silent){
+  code=String(code||'').trim();
+  if(!/^\d{6}$/.test(code)) return null;
+  trackedCode=code;
+  if(!silent){
+    const b=$('#quoteBar');
+    if(b){ b.className='show'; b.innerHTML='<span class="qdot stale"></span><span class="qnm">'+esc(code)+'</span><span>行情加载中…</span><span class="qtm">↻</span>'; }
+  }
+  try{
+    const q=await callFn({action:'quote',code});
+    if(!q || !q.price) throw new Error((q&&q.error)||'没有价格');
+    trackedQuote=q; renderQuoteBar(q);
+    return q;
+  }catch(e){
+    trackedQuote=null;
+    if(!silent) renderQuoteBar(null,e);
+    return null;
+  }finally{
+    clearTimeout(quoteTimer);
+    quoteTimer=setTimeout(()=>{
+      if(trackedCode && !document.hidden) trackQuote(trackedCode,true);
+    }, (trackedQuote&&trackedQuote.stale)?60000:15000);
+  }
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && trackedCode) trackQuote(trackedCode,true); });
+
+// 思考流：只展示中文过程，结束时整体移除，不写库、不进正式回答
+let thinkEl=null, thinkBody=null, thinkLabel=null, thinkRaw='', thinkStart=0, thinkTimer=null;
+function startThink(label,line){
+  endThink(true);
+  thinkEl=document.createElement('div'); thinkEl.className='think';
+  const head=document.createElement('div'); head.className='th';
+  const dot=document.createElement('span'); dot.className='pulse';
+  thinkLabel=document.createElement('span'); thinkLabel.textContent=label||'正在思考';
+  head.appendChild(dot); head.appendChild(thinkLabel);
+  thinkBody=document.createElement('div'); thinkBody.className='tbody';
+  thinkEl.appendChild(head); thinkEl.appendChild(thinkBody);
+  $('#msgs').appendChild(thinkEl);
+  thinkRaw=''; thinkStart=Date.now();
+  setThinkText(line||'');
+  clearInterval(thinkTimer);
+  thinkTimer=setInterval(()=>{
+    if(!thinkLabel) return;
+    const sec=Math.round((Date.now()-thinkStart)/1000);
+    thinkLabel.textContent=(label||'正在思考')+(sec>=2?' · '+sec+'s':'');
+  },1000);
+  return thinkEl;
+}
+function setThinkText(t){
+  if(!thinkBody) return;
+  t=String(t||'').slice(-180);
+  thinkBody.textContent=t;
+  thinkBody.scrollTop=thinkBody.scrollHeight;
+  scrollBottom();
+  setTimeout(scrollBottom,220);
+}
+function appendThink(line){
+  if(!thinkBody) return;
+  const prev=thinkBody.textContent||'';
+  setThinkText(prev+(prev?'\n':'')+line);
+}
+function zhThought(s){
+  return String(s||'')
+    .replace(/```[\s\S]*?```/g,'')
+    .replace(/[^\u3400-\u9FFF\u3000-\u303F\uFF00-\uFFEF0-9.%+\-\n]/g,'')
+    .replace(/[ \t]+/g,'')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+function endThink(immediate){
+  clearInterval(thinkTimer); thinkTimer=null;
+  const el=thinkEl; thinkEl=null; thinkBody=null; thinkLabel=null; thinkRaw='';
+  if(!el) return;
+  if(immediate){ el.remove(); return; }
+  el.classList.add('out');
+  setTimeout(()=>{ try{ el.remove(); }catch(e){} },260);
+}
+
+// ---------- 抽屉 ----------
+function openDrawer(){ $('#drawer').classList.add('open'); $('#mask').style.display='block'; renderPositions(); }
+function closeDrawer(){ $('#drawer').classList.remove('open'); $('#mask').style.display='none'; }
+$('#menuBtn').onclick=openDrawer; $('#mask').onclick=closeDrawer;
+
+// ---------- 记忆：三层 ----------
+async function loadMemories(limit=12){
+  try{
+    const { data } = await db.from('memories').select('*').order('id',{ascending:false}).limit(limit);
+    return (data||[]).map(x=>x.content);
+  }catch(e){ return []; }
+}
+async function saveMemory(kind, content){
+  try{ await db.from('memories').insert({ kind, content }); return true; }catch(e){ console.warn(e); return false; }
+}
+// 把次要会话压成一条长期记忆（每个会话只做一次）
+async function digest(s){
+  if(!s || s.title===MAIN_TITLE) return;
+  const key = 'dig_'+s.id; if(localStorage.getItem(key)) return;
+  const { data } = await db.from('messages').select('role,content').eq('session_id', s.id).order('id',{ascending:true});
+  if(!data || data.length < 4) { localStorage.setItem(key,'1'); return; }
+  localStorage.setItem(key,'1');
+  const txt = data.slice(-20).map(m=>(m.role==='user'?'用户：':'我：')+m.content).join('\n').slice(0,3000);
+  try{
+    const r = await fetch(AI_URL,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify({ model:MODEL, stream:false, messages:[
+        {role:'system',content:'把下面这段对话压成 2 条以内、每条不超过 40 字的长期记忆，只保留关于用户的稳定事实、偏好、约定或重要事件；没有就输出「无」。不要复述原话。'},
+        {role:'user',content:txt}
+      ]})});
+    const j = await r.json(); const out = (j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
+    const clean = out.trim();
+    if(clean && clean!=='无') await saveMemory('digest', '【'+(s.title||'会话')+'】'+clean.slice(0,200));
+  }catch(e){ console.warn('digest fail', e); }
+}
+
+// ---------- 发送 ----------
+$('#send').onclick = ()=>{
+  if(busy){ if(abortCtrl) abortCtrl.abort(); return; }
+  const t=$('#inp').value.trim(); if(!t) return;
+  if(!curSess){ addBubble('sys','会话还在加载，稍等一下再发；这条已保留。'); return; }
+  $('#inp').value=''; sendMsg(t);
+};
+$('#inp').addEventListener('keydown', e=>{
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); $('#send').onclick(); }
+});
+$('#inp').addEventListener('input', ()=>{ const el=$('#inp'); el.style.height='auto'; el.style.height=Math.min(120, el.scrollHeight)+'px'; });
+
+async function sendMsg(text){
+  if(!text || !curSess || busy) return null;
+  busy=true; abortCtrl=new AbortController();
+  const btn=$('#send'); btn.disabled=false; btn.classList.add('busy'); btn.textContent='■'; btn.title='停止生成';
+  let ph=null, span=null;
+  addBubble('user',text);
+  const code=(text.match(/\b(\d{6})\b/)||[])[1];
+  const needPrice=/(多少钱|现价|价格|涨跌|行情|现在|实时)/.test(text);
+  const deepAsk=/(分析|为什么|怎么|如何|建议|对比|估值|趋势|策略|风险|财报|业绩|研究|解释|判断|值不值|能不能买|该不该|方案|复盘)/.test(text);
+  const wantThink=deepAsk && !(code && text.length<=35 && /(多少钱|现价|价格|涨跌|行情)/.test(text));
+  startThink(code?'正在查行情':'正在思考', code?'已识别 '+code+'，正在拉取实时行情':'已收到，正在理解你的问题');
+  try{
+    await db.from('messages').insert({ session_id:curSess.id, role:'user', content:text });
+    const { data:hist } = await db.from('messages').select('*').eq('session_id',curSess.id).order('id',{ascending:true});
+    const ctx=[{role:'system',content:SYS_PROMPT}];
+    let quoteCtx='';
+    if(code){
+      appendThink('正在核对行情与昨日收盘');
+      const q=await trackQuote(code,true);
+      if(q && q.price){
+        const tm=q.marketTime?(' 数据时间 '+q.marketTime):' 数据时间未知';
+        quoteCtx='【实时行情，以此为准，禁止说看不到行情】'+code+' 现价'+q.price+' 涨跌'+q.chgPct+'% 名称'+q.name+' 换手'+q.turnover+' PE'+q.pe+tm;
+        if(q.stale) quoteCtx+='【该行情已超过5分钟未变动，A股大概率已休市，必须按这个收盘/最近时点讲，禁止说“现在”】';
+        ctx.push({role:'system',content:quoteCtx});
+        appendThink('现价 '+q.price+' 元，涨跌 '+q.chgPct+'% · '+(q.marketTime?q.marketTime.slice(11,19):'时间未知'));
+      }else{
+        appendThink('实时行情接口失败，本次不报价格');
+        if(needPrice){
+          endThink(); addBubble('sys','实时行情暂时取不到，这次不给你报价格，避免把旧数据当成现在。稍后点顶部行情条刷新，或再问一次。');
+          return null;
+        }
+        ctx.push({role:'system',content:'【本次实时行情接口失败】绝对禁止给出任何具体价格、涨跌幅、成交量、成交额；只能讲规则、风险或需要看什么数据，并明确说实时行情暂时取不到。'});
+      }
+    }
+    const mem = await loadMemories(12);
+    if(mem.length) ctx.push({role:'system',content:'你记得这些（按时间倒序，越靠前越近）：\n- '+mem.join('\n- ')});
+    (hist||[]).slice(-20).forEach(m=>{ if(m.role==='user'||m.role==='assistant') ctx.push({role:m.role,content:m.content}); });
+    if(quoteCtx){
+      const last=ctx[ctx.length-1];
+      if(last && last.role==='user') last.content=quoteCtx+'\n用户这次问：'+last.content;
+      else ctx.push({role:'user',content:quoteCtx});
+    }
+
+    ph = addBubble('assistant','');
+    span = ph.querySelector('span');
+    span.textContent = wantThink?'正在深度思考…':'正在查…';
+    appendThink(wantThink?'正在梳理数据与逻辑':'正在组织回答');
+    const r = await fetch(AI_URL,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      signal: abortCtrl.signal,
+      body: JSON.stringify({ model:MODEL, reasoning_effort:wantThink?'low':'none', stream:true, messages:ctx }) });
+    if(!r.ok){ const j=await r.json().catch(()=>({})); ph.remove(); throw new Error(j.message||('HTTP '+r.status)); }
+    const KEY_MARK='【关键回答】';
+    let full='', mainAns='', keyAns='', keyStarted=false, gotMain=false, spokenUpTo=0;
+    if(r.body && r.body.getReader){
+      const rd=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+      while(true){
+        const {done,value}=await rd.read(); if(done) break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split('\n'); buf=lines.pop()||'';
+        for(const ln of lines){
+          const s=ln.trim(); if(!s.startsWith('data:')) continue;
+          const d=s.slice(5).trim(); if(d==='[DONE]') continue;
+          try{ const j=JSON.parse(d); const dl=(j.choices&&j.choices[0]&&j.choices[0].delta)||{};
+            const rsn=dl.reasoning_content||dl.reasoning||'';
+            if(rsn){ thinkRaw+=rsn; const zh=zhThought(thinkRaw); if(zh) setThinkText(zh); }
+            const t=dl.content||(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
+            if(t){
+              full+=t;
+              const mi=full.indexOf(KEY_MARK);
+              if(mi>=0){ keyStarted=true; mainAns=full.slice(0,mi).trim(); keyAns=full.slice(mi+KEY_MARK.length); }
+              else if(!keyStarted){ mainAns=full; }
+              if(mainAns && !gotMain){ gotMain=true; endThink(); }
+              span.textContent=mainAns||(keyStarted?'关键回答已生成，见下方卡片':'');
+              scrollBottom();
+              if(callOn && mainAns){ const pend=mainAns.slice(spokenUpTo); if(pend.length>=8 && /[。！？!?]\s*$/.test(pend)){ enqueueTTS(pend,null); spokenUpTo=mainAns.length; } }
+            }
+          }catch(e){}
+        }
+      }
+    }else{
+      const j=await r.json(); full=(j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'';
+      const mi=full.indexOf(KEY_MARK);
+      if(mi>=0){ keyStarted=true; mainAns=full.slice(0,mi).trim(); keyAns=full.slice(mi+KEY_MARK.length); }
+      else mainAns=full;
+      endThink(); span.textContent=mainAns;
+    }
+    if(!mainAns && keyStarted) ph.remove();
+    if(callOn && mainAns && spokenUpTo<mainAns.length){ enqueueTTS(mainAns.slice(spokenUpTo),null); spokenUpTo=mainAns.length; }
+    if(!mainAns && !keyAns){ endThink(); ph.remove(); throw new Error('模型没有返回内容'); }
+    if(keyAns){
+      if(ph.parentNode) ph.remove();
+      addAnswerBlock(mainAns,keyAns);
+    }else if(mainAns){
+      const spk=document.createElement('button'); spk.className='spk'; spk.textContent='🔊'; spk.title='朗读'; spk.onclick=()=>{ if(spk.classList.contains('on')) stopSpeak(); else speak(mainAns,spk); }; ph.appendChild(spk);
+    }
+    const stored=mainAns+(keyAns?('\n'+KEY_MARK+'\n'+keyAns):'');
+    await db.from('messages').insert({ session_id:curSess.id, role:'assistant', content:stored });
+    return mainAns||keyAns;
+  }catch(e){
+    endThink();
+    if(e && e.name === 'AbortError'){
+      if(span && /正在/.test(span.textContent)) span.textContent = '已停止';
+      addBubble('sys','已停止生成');
+      return null;
+    }
+    addBubble('sys','出错：'+(e.message||e));
+    return null;
+  }finally{
+    endThink();
+    busy=false; abortCtrl=null;
+    const btn=$('#send'); btn.disabled=false; btn.classList.remove('busy'); btn.textContent='↑'; btn.title='发送';
+  }
+}
+
+// ---------- 语音 ----------
+async function callFn(body){
+  try{
+    initSDK();
+    const res = await app.callFunction({ name:'stockapi', data: body });
+    if(res && res.result) return res.result;
+  }catch(e){ /* 回退到 HTTP 网关 */ }
+  const r = await fetch(FN_URL,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body: JSON.stringify(body) });
+  return await r.json().catch(()=>({ok:false,error:'HTTP '+r.status}));
+}
+function fnErr(j){
+  const e = j.error || j.message || '未知错误';
+  if(/ServerNotOpen|UserNotRegistered/.test(e)) return '语音服务没开通，去腾讯云控制台开通 ASR / TTS。';
+  return e;
+}
+let speaking=null, ttsQueue=[], ttsRunning=false, ttsBtn=null, ttsAbort=null;
+function splitTTS(text){
+  const raw=String(text||'').replace(/\s+/g,' ').trim();
+  if(!raw) return [];
+  const parts=raw.match(/[^。！？!?；;\n]+[。！？!?；;\n]?/g)||[raw];
+  const out=[]; let cur='';
+  for(const p of parts){
+    if((cur+p).length>90 && cur){ out.push(cur); cur=''; }
+    cur+=p;
+  }
+  if(cur) out.push(cur);
+  return out;
+}
+function enqueueTTS(text, btn){
+  const chunks=splitTTS(text);
+  if(!chunks.length) return;
+  if(btn){ ttsBtn=btn; btn.classList.add('on'); }
+  ttsQueue.push(...chunks);
+  if(!ttsRunning) drainTTS();
+}
+function speakOne(text){
+  return new Promise((resolve)=>{
+    try{
+      const u=new SpeechSynthesisUtterance(text);
+      u.lang='zh-CN'; u.rate=1.05; u.pitch=1;
+      const vs=window.speechSynthesis.getVoices()||[];
+      const zh=vs.find(v=>/zh|Chinese|Xiaoxiao|Yunxi|Huihui/i.test((v.lang||'')+(v.name||'')));
+      if(zh) u.voice=zh;
+      u.onend=()=>resolve(); u.onerror=()=>resolve();
+      window.speechSynthesis.speak(u);
+    }catch(e){ resolve(); }
+  });
+}
+async function drainTTS(){
+  ttsRunning=true;
+  try{
+    while(ttsQueue.length){
+      const chunk=ttsQueue.shift();
+      speaking=true;
+      await speakOne(chunk);
+      speaking=null;
+      if(ttsAbort && ttsAbort.signal.aborted) break;
+    }
+  }catch(e){
+    ttsQueue=[];
+  }finally{
+    ttsRunning=false; ttsAbort=null;
+    if(ttsBtn){ ttsBtn.classList.remove('on'); ttsBtn=null; }
+  }
+}
+function speak(text, btn){
+  stopSpeak();
+  try{ ttsAbort=new AbortController(); enqueueTTS(text, btn); }catch(e){ console.warn(e); }
+}
+function stopSpeak(){
+  ttsQueue=[];
+  if(ttsAbort){ try{ ttsAbort.abort(); }catch(e){} ttsAbort=null; }
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  speaking=null;
+  if(ttsBtn){ ttsBtn.classList.remove('on'); ttsBtn=null; }
+}
+
+// 录音 → 16k 单声道 WAV → base64
+async function toWav16k(blob){
+  const buf = await blob.arrayBuffer();
+  const ac = new (window.AudioContext||window.webkitAudioContext)();
+  const audio = await ac.decodeAudioData(buf);
+  const sr=16000, ratio = audio.sampleRate/sr, n = Math.floor(audio.length/ratio);
+  const out = new Float32Array(n);
+  const chs = [];
+  for(let c=0;c<audio.numberOfChannels;c++) chs.push(audio.getChannelData(c));
+  for(let i=0;i<n;i++){
+    const s=Math.floor(i*ratio), e2=Math.min(audio.length, Math.floor((i+1)*ratio))||s+1;
+    let sum=0,cnt=0;
+    for(let k=s;k<e2;k++){ let v=0; for(let c=0;c<chs.length;c++) v+=chs[c][k]; sum += v/chs.length; cnt++; }
+    out[i]= cnt? sum/cnt : 0;
+  }
+  ac.close();
+  const bytes=n*2, ab=new ArrayBuffer(44+bytes), v=new DataView(ab);
+  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+bytes,true); w(8,'WAVE'); w(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,'data'); v.setUint32(40,bytes,true);
+  let off=44; for(let i=0;i<n;i++){ let x=Math.max(-1,Math.min(1,out[i])); v.setInt16(off, x<0?x*0x8000:x*0x7fff, true); off+=2; }
+  const u8=new Uint8Array(ab); let str='';
+  for(let i=0;i<u8.length;i+=8192) str+=String.fromCharCode.apply(null, u8.subarray(i,i+8192));
+  return btoa(str);
+}
+async function asr(blob){
+  const wav = await toWav16k(blob);
+  const j = await callFn({ action:'asr', audioBase64:wav, format:'wav' });
+  if(!j.ok) throw new Error(fnErr(j));
+  return (j.text||'').trim();
+}
+
+// ---------- 按住说（单次）----------
+async function onceRecord(){
+  const st = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true}});
+  const chunks=[]; const rec=new MediaRecorder(st, {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':''});
+  rec.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+  const started = Date.now();
+  const stop = new Promise(res=>{ rec.onstop=()=>res(new Blob(chunks,{type:'audio/webm'})); });
+  rec.start();
+  return { stop: ()=>{ if(rec.state==='recording') rec.stop(); st.getTracks().forEach(t=>t.stop()); return {blob:stop, ms: Date.now()-started}; } };
+}
+
+// ---------- 通话模式（免按键连续）----------
+let callOn=false, callStream=null, callAC=null, callAnalyser=null, callData=null;
+const micBtn = $('#mic');
+
+micBtn.onclick = ()=> callOn ? stopCall() : startCall();
+$('#hangUp').onclick = ()=> stopCall();
+
+async function startCall(){
+  try{
+    callStream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  }catch(e){ addBubble('sys','麦克风打不开：'+(e.message||e)); return; }
+  callAC = new (window.AudioContext||window.webkitAudioContext)();
+  await callAC.resume();
+  const src = callAC.createMediaStreamSource(callStream);
+  callAnalyser = callAC.createAnalyser(); callAnalyser.fftSize=512;
+  src.connect(callAnalyser);
+  callData = new Uint8Array(callAnalyser.fftSize);
+  callOn = true;
+  micBtn.classList.add('live'); micBtn.textContent='■';
+  $('#callBar').classList.remove('hide');
+  setTip('在听你说');
+  if(briefRow && !briefRow._spoke){
+    briefRow._spoke=1; setTip('先说今天的情况…');
+    try{ speak(briefRow.body, null); }catch(e){}
+    setTip('在听你说');
+  }
+  loop();
+}
+
+function stopCall(){
+  callOn=false;
+  stopSpeak();
+  if(callStream) callStream.getTracks().forEach(t=>t.stop());
+  if(callAC) try{ callAC.close(); }catch(e){}
+  callStream=null; callAC=null; callAnalyser=null;
+  micBtn.classList.remove('live'); micBtn.textContent='☎';
+  $('#callBar').classList.add('hide');
+  setTip('在听你说');
+}
+function setTip(s){ $('#callTip').textContent = s; }
+function rms(){
+  if(!callAnalyser) return 0;
+  callAnalyser.getByteTimeDomainData(callData);
+  let sum=0; for(let i=0;i<callData.length;i++){ const v=(callData[i]-128)/128; sum+=v*v; }
+  return Math.sqrt(sum/callData.length);
+}
+const TH = 0.045;
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function loop(){
+  while(callOn){
+    // 等开口
+    let need=0;
+    while(callOn && need<3){ if(rms()>TH) need++; else need=0; await sleep(60); }
+    if(!callOn) break;
+    if(speaking){ if(rms()>TH*1.5){ stopSpeak(); } await sleep(120); continue; }
+
+    setTip('听你说…');
+    const chunks=[]; let rec=null;
+    try{
+      rec = new MediaRecorder(callStream, {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':''});
+      rec.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+      rec.start();
+    }catch(e){ break; }
+    const t0 = Date.now(); let quiet=0;
+    while(callOn){
+      await sleep(60);
+      if(speaking) break;
+      if(rms()<TH) quiet++; else quiet=0;
+      if(quiet>14) break;                          // 静音约 0.85s
+      if(Date.now()-t0 > 20000) break;             // 单段上限 20s
+    }
+    const blob = await new Promise(res=>{ rec.onstop=()=>res(new Blob(chunks,{type:'audio/webm'})); if(rec.state==='recording') rec.stop(); else res(new Blob(chunks)); });
+    if(!callOn) break;
+    if(blob.size < 9000) { setTip('在听你说'); continue; }
+    setTip('识别中…');
+    try{
+      const text = await asr(blob);
+      if(!text){ setTip('在听你说'); continue; }
+      setTip('回答中…');
+      const ans = await sendMsg(text);
+      if(ans && !ttsRunning) enqueueTTS(ans, null);
+      setTip('在听你说');
+    }catch(e){
+      addBubble('sys','通话出错：'+(e.message||e));
+      await sleep(600);
+    }
+  }
+}
+
+// ---------- 行情（抽屉里，可选）----------
+function secid(code){ code=String(code).trim(); if(!/^\d{6}$/.test(code)) return null; return (code[0]==='6'||code[0]==='9'?'1.':'0.')+code; }
+function emQuote(code){
+  return new Promise((resolve,reject)=>{
+    const sid=secid(code); if(!sid){ reject(new Error('代码应为 6 位数字')); return; }
+    const cb='emcb'+Math.random().toString(36).slice(2);
+    let s; const t=setTimeout(()=>{ cleanup(); reject(new Error('行情超时')); },12000);
+    function cleanup(){ clearTimeout(t); delete window[cb]; if(s) s.remove(); }
+    window[cb]=function(resp){ cleanup(); const d=resp&&resp.data; if(!d){ reject(new Error('没取到')); return; }
+      const n=(v)=> typeof v==='number'? v/100 : null;
+      resolve({ code:d.f57, name:d.f58, price:n(d.f43), prevClose:n(d.f60), chgPct:n(d.f170), turnover:n(d.f168), pe:n(d.f162), pb:n(d.f167) });
+    };
+    s=document.createElement('script');
+    s.src='https://push2.eastmoney.com/api/qt/stock/get?secid='+sid+'&fields=f43,f57,f58,f60,f169,f170,f168,f162,f167&cb='+cb;
+    s.onerror=()=>{ cleanup(); reject(new Error('行情接口不可达')); };
+    document.head.appendChild(s);
+  });
+}
+$('#qbtn').onclick = async ()=>{
+  const box=$('#qbox'), code=$('#code').value.trim(); if(!code) return;
+  box.style.display='block'; box.textContent='查询中…'; $('#qbtn').disabled=true;
+  try{
+    const q=await emQuote(code); curQuote=q;
+    const cls=q.chgPct>=0?'up':'down', sign=q.chgPct>=0?'+':'';
+    box.innerHTML='<div><b>'+esc(q.name)+'</b> <span class="lbl">'+esc(q.code)+'</span></div>'+
+      '<div class="'+cls+'" style="font-size:17px;font-weight:600;margin:3px 0">'+q.price+' <span style="font-size:12px">'+sign+(q.chgPct==null?'-':q.chgPct.toFixed(2))+'%</span></div>'+
+      '<div class="lbl">换手 '+(q.turnover==null?'-':q.turnover.toFixed(2))+'% · PE '+(q.pe==null?'-':q.pe.toFixed(1))+'</div>';
+  }catch(e){ box.textContent='查询失败：'+(e.message||e); curQuote=null; }
+  finally{ $('#qbtn').disabled=false; }
+};
+$('#toCtx').onclick=()=>{ if(!curQuote){ alert('先查一个'); return; } closeDrawer(); $('#inp').value='帮我看看 '+curQuote.name+'('+curQuote.code+') 现在 '+curQuote.price+' 元、涨跌 '+curQuote.chgPct+'%，大概什么情况。'; $('#inp').focus(); };
+$('#addWatch').onclick=async()=>{ if(!curQuote){ alert('先查一个'); return; }
+  const { error }=await db.from('watchlist').insert({code:curQuote.code,name:curQuote.name});
+  if(error && !String(error.message||'').includes('duplicate')) alert('加自选失败');
+  await loadWatch(); };
+async function loadWatch(){
+  const box=$('#watchBox');
+  const { data } = await db.from('watchlist').select('*').order('created_at',{ascending:false});
+  if(!data || !data.length){ box.innerHTML='<div class="empty">还没有自选</div>'; return; }
+  box.innerHTML=data.map(w=>'<div class="lbl" style="display:flex;justify-content:space-between;padding:3px 0"><span>'+esc(w.name||'')+' '+esc(w.code)+'</span><a href="#" data-del="'+w.id+'" style="color:#7d8899">删</a></div>').join('');
+  box.querySelectorAll('[data-del]').forEach(a=>a.onclick=async(e)=>{ e.preventDefault(); await db.from('watchlist').delete().eq('id',a.dataset.del); await loadWatch(); });
+}
+
+$('#bulkAdd').onclick = async ()=>{
+  const raw=$('#bulk').value||'';
+  const codes=(raw.match(/\d{6}/g)||[]).slice(0,20);
+  if(!codes.length){ alert('没找到 6 位代码'); return; }
+  $('#bulk').value=''; $('#bulkAdd').disabled=true;
+  for(const c of codes){
+    try{
+      const q=await emQuote(c);
+      await db.from('watchlist').insert({ code:c, name:q.name||null });
+    }catch(e){ try{ await db.from('watchlist').insert({ code:c }); }catch(e2){} }
+  }
+  $('#bulkAdd').disabled=false; await loadWatch();
+};
+
+// ---------- 智能分析（云函数 analyze：东财 K 线 + A 股规则 + 回测与校验）----------
+let anaQuote=null;
+$('#abtn').onclick = async ()=>{
+  const box=$('#abox'), code=($('#acode').value||'').trim(), cash=Number($('#acash').value)||100000;
+  if(!/^\d{6}$/.test(code)){ box.style.display='block'; box.textContent='代码要 6 位数字'; return; }
+  box.style.display='block'; box.textContent='算着…（拉 3 年 K 线）'; $('#abtn').disabled=true;
+  try{
+    const j = await callFn({ action:'analyze', code, cash:String(cash) });
+    if(!j.ok) throw new Error(fnErr(j));
+    anaQuote=j;
+    const m=j.backtest.metrics, chg=j.last.chg_pct, cls=(chg==null||chg>=0)?'up':'down';
+    const rows=[
+      '<div><b>'+esc(j.code)+'</b> <span class="lbl">'+esc(j.last.date)+' · '+esc(j.source)+' · '+esc(j.range[0])+'~'+esc(j.range[1])+'（'+j.bars+' 根）</span></div>',
+      '<div class="'+cls+'" style="font-size:17px;font-weight:600;margin:3px 0">'+j.last.close+' <span style="font-size:12px">'+(chg==null?'-':(chg>=0?'+':'')+chg.toFixed(2)+'%')+'</span></div>',
+      '<div class="lbl">涨跌停 '+j.limits.limit_up+' / '+j.limits.limit_down+'（'+esc(j.board)+' ±'+j.limits.pct+'%）</div>',
+      '<div class="lbl">双均线回测：收益 '+m.total_return.toFixed(2)+'%，年化 '+m.annual_return.toFixed(2)+'%，回撤 '+m.max_drawdown.toFixed(1)+'%，夏普 '+m.sharpe+'，成交 '+m.trades+' 笔，被拦 '+m.blocked+'</div>',
+      '<div class="lbl">数据校验 P0 '+j.summary.P0+' / P1 '+j.summary.P1+' / P2 '+j.summary.P2+'</div>'
+    ];
+    const reasons=j.backtest.blocked_reasons||{};
+    if(Object.keys(reasons).length){
+      rows.push('<div class="lbl">被拦：'+Object.entries(reasons).map(([k,v])=>esc(k)+'×'+v).join('；')+'</div>');
+    }
+    if(j.issues && j.issues.length) rows.push('<div class="lbl">'+esc(j.issues[0].detail)+'</div>');
+    box.innerHTML=rows.join('');
+  }catch(e){ box.textContent='分析失败：'+(e.message||e); anaQuote=null; }
+  finally{ $('#abtn').disabled=false; }
+};
+$('#aCtx').onclick=()=>{
+  if(!anaQuote){ alert('先算一个'); return; }
+  const a=anaQuote, m=a.backtest.metrics, chg=a.last.chg_pct;
+  closeDrawer();
+  $('#inp').value='看下 '+a.code+'：截至 '+a.last.date+' 收盘 '+a.last.close+' 元'+
+    (chg==null? '' : '、当日 '+(chg>=0?'+':'')+chg.toFixed(2)+'%')+
+    '，涨跌停 '+a.limits.limit_up+'/'+a.limits.limit_down+
+    '。我这边跑的双均线回测：总收益 '+m.total_return.toFixed(2)+'%、最大回撤 '+m.max_drawdown.toFixed(1)+'%、成交 '+m.trades+' 笔。这数据靠谱吗，值不值得盯？';
+  $('#inp').focus();
+};
+
+// ---------- 持仓 ----------
+async function loadPositions(){
+  return ((await db.from('positions').select('*').order('created_at',{ascending:false})).data)||[];
+}
+async function renderPositions(){
+  const box=$('#posBox'); box.textContent='刷新中…';
+  const pos=await loadPositions();
+  if(!pos.length){ box.innerHTML='<div class="empty">还没录持仓</div>'; return; }
+  const lines=[]; let total=0;
+  for(const p of pos.slice(0,8)){
+    let price=null,chg=null;
+    try{ const q=await emQuote(p.code); price=q.price; chg=q.chgPct; }catch(e){}
+    const qty=Number(p.qty)||0, cost=Number(p.avg_cost)||0;
+    let pnlTxt='-', cls='lbl';
+    if(price!=null && cost>0 && qty>0){
+      const pnl=(price-cost)*qty, rate=(price/cost-1)*100; total+=pnl;
+      cls = pnl>=0?'up':'down';
+      pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(0)+' / '+(rate>=0?'+':'')+rate.toFixed(1)+'%';
+    }
+    lines.push('<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:12.5px">'+
+      '<span>'+esc(p.name||p.code)+' <span class="lbl">'+esc(p.code)+'</span></span>'+
+      '<span class="'+cls+'">'+pnlTxt+'<a href="#" data-pdel="'+p.id+'" style="color:#7d8899;margin-left:8px">删</a></span></div>');
+  }
+  const tot='<div class="lbl" style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">合计浮动盈亏 '+(total>=0?'+':'')+total.toFixed(0)+' 元</div>';
+  box.innerHTML=lines.join('')+tot;
+  box.querySelectorAll('[data-pdel]').forEach(a=>a.onclick=async(e)=>{ e.preventDefault(); await db.from('positions').delete().eq('id',a.dataset.pdel); renderPositions(); });
+}
+$('#addPos').onclick = async ()=>{
+  const code=($('#pcode').value||'').trim(), cost=Number($('#pcost').value), qty=Number($('#pqty').value);
+  if(!/^\d{6}$/.test(code)){ alert('代码要 6 位数字'); return; }
+  if(!(cost>0) || !(qty>0)){ alert('成本价和股数都要填正数'); return; }
+  $('#addPos').disabled=true;
+  try{
+    let name=null;
+    try{ const q=await emQuote(code); name=q.name; }catch(e){}
+    await db.from('positions').insert({ code, name, avg_cost:cost, qty });
+    $('#pcode').value=''; $('#pcost').value=''; $('#pqty').value='';
+    await renderPositions();
+  }catch(e){ alert('保存失败：'+(e.message||e)); }
+  $('#addPos').disabled=false;
+};
+$('#posRefresh').onclick = renderPositions;
+
+// ---------- 主动汇报：每日简报 ----------
+let briefRow=null;
+function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString(); }
+async function loadBrief(){
+  try{
+    const { data } = await db.from('reports').select('*').eq('kind','brief').gte('created_at', todayStart()).order('id',{ascending:false}).limit(1);
+    const row=(data && data[0]) || null;
+    if(row && /看不到实时行情|行情这次没取到|暂时没法帮你盯/.test(String(row.body||''))) return null;
+    return row;
+  }catch(e){ return null; }
+}
+async function makeBrief(){
+  const now=new Date();
+  const ds=now.toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric'});
+  const t=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  let facts='';
+  const { data:wl } = await db.from('watchlist').select('*').order('created_at',{ascending:false}).limit(6);
+  if(wl && wl.length){
+    const lines=[];
+    for(const w of wl){
+      try{
+        const q=await callFn({action:'quote',code:w.code});
+        if(!q||q.price==null) continue;
+        lines.push('- '+(q.name||w.name)+'('+q.code+')：最新 '+q.price+' 元，涨跌 '+(q.chgPct==null?'-':(q.chgPct>=0?'+':'')+q.chgPct.toFixed(2)+'%')+(q.turnover==null?'':'，换手 '+q.turnover.toFixed(2)+'%')+(q.marketTime?'，行情时间 '+q.marketTime:''));
+      }catch(e){}
+    }
+    facts = lines.length ? ('时间 '+ds+' '+t+'。用户自选股实时快照：\n'+lines.join('\n')) : ('时间 '+ds+' '+t+'。用户还没有自选股；行情服务正常可用。');
+  }else{
+    facts = '时间 '+ds+' '+t+'。用户还没加任何自选股；行情服务正常可用。';
+  }
+  try{
+    const pos = await loadPositions();
+    const pl=[]; let total=0;
+    for(const p of pos.slice(0,6)){
+      if(!(Number(p.qty)>0) || !(Number(p.avg_cost)>0)) continue;
+      try{
+        const q=await callFn({action:'quote',code:p.code});
+        if(!q||q.price==null) continue;
+        const cost=Number(p.avg_cost), qty=Number(p.qty);
+        const pnl=(q.price-cost)*qty, rate=(q.price/cost-1)*100; total+=pnl;
+        pl.push('- '+(q.name||p.name||p.code)+'('+p.code+')：成本 '+cost.toFixed(2)+'，现价 '+q.price+'，持股 '+qty+'，浮动盈亏 '+(pnl>=0?'+':'')+pnl.toFixed(0)+' 元（'+(rate>=0?'+':'')+rate.toFixed(2)+'%）'+(q.marketTime?'，行情时间 '+q.marketTime:''));
+      }catch(e){}
+    }
+    if(pl.length) facts += '\n用户持仓：\n'+pl.join('\n')+'\n持仓合计浮动盈亏 '+(total>=0?'+':'')+total.toFixed(0)+' 元';
+  }catch(e){}
+  const sys = SYS_PROMPT + '\n现在你在主动给用户做一次当日简短汇报：第一句给结论（今天该注意什么），中间给依据，最后一句提醒；最多四句；只能用下面给出的数字，不许补任何新数字；不要列表、不要标题。即使没有自选股，也不要说“看不到实时行情”，只说明还没加自选股即可。';
+  const r = await fetch(AI_URL,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify({ model:MODEL, stream:false, messages:[{role:'system',content:sys},{role:'user',content:facts}] }) });
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error((j&&j.message)||('HTTP '+r.status));
+  let text = ((j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'').trim();
+  if(!text) text = facts;
+  const row={ kind:'brief', title:'今日简报 · '+ds, body:text };
+  try{
+    const { data:ins, error } = await db.from('reports').insert(row).select();
+    if(!error && ins && ins[0]) return ins[0];
+  }catch(e){}
+  return row;
+}
+async function initBrief(force){
+  if(!force) briefRow = await loadBrief();
+  if(!briefRow){
+    try{ briefRow = await makeBrief(); }catch(e){ console.warn('brief fail',e); }
+  }
+  updateBell();
+  if(curSess && curSess.title===MAIN_TITLE) await loadMessages();
+}
+function updateBell(){
+  const b=$('#bell'); if(!b) return;
+  b.innerHTML = '🔔' + ((briefRow && !briefRow.read) ? '<span class="dot"></span>' : '');
+}
+async function renderBriefTop(){
+  if(!curSess || curSess.title!==MAIN_TITLE || !briefRow) return false;
+  const box=$('#msgs'); if(!box) return false;
+  const wasUnread = !briefRow.read;
+  const d=document.createElement('div'); d.className='msg brief';
+  d.innerHTML='<h4><span>'+esc(briefRow.title||'今日简报')+'</span><span style="font-weight:400;color:#8b98a9">'+
+    esc(new Date(briefRow.created_at||Date.now()).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}))+'</span></h4>'+
+    '<div class="bd">'+esc(briefRow.body)+'</div>';
+  const act=document.createElement('div'); act.className='act';
+  const b1=document.createElement('button'); b1.className='ghost sm'; b1.textContent='🔊 念一遍'; b1.onclick=()=>speak(briefRow.body,b1);
+  const b2=document.createElement('button'); b2.className='ghost sm'; b2.textContent='展开说说'; b2.onclick=()=>{ $('#inp').value='把今天这个简报展开说清楚点，我该注意什么？'; $('#inp').focus(); };
+  act.appendChild(b1); act.appendChild(b2); d.appendChild(act);
+  box.insertBefore(d, box.firstChild);
+  if(wasUnread){
+    briefRow.read=true; updateBell();
+    try{ await db.from('reports').update({read:true}).eq('id',briefRow.id); }catch(e){}
+  }
+  return wasUnread;
+}
+$('#bell').onclick = async ()=>{
+  if(!briefRow){ $('#stat').textContent='生成中…'; try{ await initBrief(false); }catch(e){} $('#stat').textContent='在线'; }
+  if(curSess && curSess.title!==MAIN_TITLE && mainSess) await selectSession(mainSess);
+  $('#msgs').scrollTop=0;
+};
+
+/* --- PWA：安装到桌面 + 离线外壳 --- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
+let deferredPrompt = null;
+const pwaStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pwaIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); deferredPrompt = e;
+  if (!pwaStandalone()) $('#installBtn').classList.remove('hide');
+});
+if (pwaIOS && !pwaStandalone()) $('#installBtn').classList.remove('hide');
+$('#installBtn').onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const r = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (r.outcome === 'accepted') $('#installBtn').classList.add('hide');
+  } else if (pwaIOS) {
+    alert('iPhone 安装：Safari 底部「分享」→「添加到主屏幕」→ 添加');
+  } else {
+    alert('浏览器菜单里选「安装应用」或「添加到主屏幕」');
+  }
+};
+window.addEventListener('appinstalled', () => $('#installBtn').classList.add('hide'));
+
+$('#logout').onclick = async ()=>{ if(callOn) stopCall(); try{ await auth.signOut(); }catch(e){} token=null; try{localStorage.removeItem('CB_AUTH_TOKEN');}catch(e){} location.reload(); };
+</script>
+<!-- LANE:2 -->
+<script src="./iam-l2.js"></script>
+</body>
+</html>

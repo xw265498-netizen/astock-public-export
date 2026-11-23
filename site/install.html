@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>安装 小满 · A股智能体</title>
+<meta name="theme-color" content="#0A1E33">
+<link rel="icon" type="image/png" href="/icons/icon-192.png?v=3">
+<style>
+:root{--bg:#0e1116;--card:#161b22;--line:#232a33;--txt:#e6edf3;--sub:#8b96a5;--acc:#3b82f6;--acc2:#22c55e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding:24px 18px 40px}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-size:26px;margin:8px 0 6px;letter-spacing:.5px}
+.sub{color:var(--sub);font-size:14px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+.card h2{font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;background:var(--acc);color:#fff;font-weight:600;padding:15px 18px;border-radius:12px;font-size:16px}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt);font-weight:500}
+.btn:active{transform:scale(.99)}
+.step{display:flex;gap:12px;margin:12px 0}
+.num{flex:0 0 24px;height:24px;border-radius:50%;background:#1f2937;color:#93c5fd;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.step p{margin:0;color:var(--txt);font-size:15px}
+.step small{color:var(--sub)}
+.tip{color:var(--sub);font-size:13px;margin-top:10px}
+.badge{display:inline-block;font-size:12px;color:#86efac;background:#0f2d1d;border:1px solid #1c4d33;padding:3px 8px;border-radius:999px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.foot{color:#5b6472;font-size:12px;text-align:center;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img src="/icons/logo-full.png?v=3" alt="小满 XIAO MAN AI CAPITAL" style="width:210px;height:auto;display:block;margin:4px auto 10px;border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.4)">
+  <div class="sub" style="text-align:center">A股智能体 · 行情 / 回测 / 战绩 / 语音</div>
+  <div class="card" style="padding:14px 16px">
+    <h2 style="margin:0 0 6px">短网址</h2>
+    <p style="margin:0;font-size:15px"><a href="https://xiaoman-astock.vercel.app/" style="color:#58a6ff">xiaoman-astock.vercel.app</a> → 直接打开主应用<br><span style="color:#8b96a5;font-size:13px">新短址：is.gd/d74zXk · 旧短址：is.gd/QFuQHk · 安装页：is.gd/yGO6Jz</span></p>
+  </div>
+
+  <div class="card">
+    <h2>安卓 <span class="badge">APK 直装</span></h2>
+    <a class="btn" href="./download/astock.apk" download>下载安装包（轻壳 · 约 105KB）</a>
+    <p class="tip">下载后点安装；如提示“未知来源”，在设置里允许本次安装即可。</p>
+  </div>
+
+  <div class="card">
+    <h2>iPhone / iPad</h2>
+    <a class="btn ghost" href="https://xiaoman-astock.vercel.app/">用 Safari 打开网页版</a>
+    <div class="step"><div class="num">1</div><p>用 <b>Safari</b> 打开上面的网页版<small>（不要用微信内置浏览器）</small></p></div>
+    <div class="step"><div class="num">2</div><p>点底部 <b>分享</b> 按钮（方框+向上箭头）</p></div>
+    <div class="step"><div class="num">3</div><p>选 <b>“添加到主屏幕”</b> → 右上角“添加”</p></div>
+    <div class="step"><div class="num">4</div><p>桌面出现“小满”图标，点开即全屏运行<small>，效果与 App 一致</small></p></div>
+  </div>
+
+  <div class="card">
+    <h2>账号</h2>
+    <p style="margin:0 0 8px">账号由主号统一发放，初始密码一致，登录后可自行修改。</p>
+    <p style="margin:0;color:var(--sub);font-size:14px">主号可管理 5 个子账号和 1 个调试账号。</p>
+  </div>
+
+  <div class="foot">小满 · 仅供研究与模拟，不构成投资建议</div>
+</div>
+</body>
+</html>
