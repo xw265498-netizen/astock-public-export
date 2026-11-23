@@ -14,19 +14,20 @@ jobs:
           ref: export
       - name: Mirror live site
         run: |
-          mkdir -p site
+          mkdir -p site/icons site/download
           BASE=https://xiaoman-astock.vercel.app
           for f in index.html install.html manifest.json sw.js iam-l2.js download/astock.apk; do
-            mkdir -p site/$(dirname $f)
             curl -L --retry 6 --retry-delay 5 --max-time 180 -fsS "$BASE/$f" -o "site/$f" || echo "FAIL $f"
           done
-          for i in 96 180 192 512 1024; do
-            curl -L --retry 3 --max-time 60 -fsS "$BASE/icons/icon-$i.png?v=3" -o "site/icons/icon-$i.png" || true
+          for i in 48 72 96 144 152 180 192 384 512 1024; do
+            curl -L --retry 3 --max-time 60 -fsS "$BASE/icons/icon-$i.png?v=3" -o "site/icons/icon-$i.png" || echo "FAIL icon-$i"
           done
-          for f in logo-full.png icon-512-maskable.png icon-384.png icon-152.png icon-144.png icon-72.png icon-48.png favicon.ico apple-touch-icon.png; do
-            curl -L --retry 3 --max-time 60 -fsS "$BASE/icons/$f" -o "site/icons/$f" || true
+          for f in logo-full.png icon-512-maskable.png favicon.ico apple-touch-icon.png; do
+            curl -L --retry 3 --max-time 60 -fsS "$BASE/icons/$f" -o "site/icons/$f" || echo "FAIL $f"
           done
           find site -type f -printf '%p %s bytes\n' | sort
+          echo '--- markers ---'
+          grep -c 'dedupeAnswer' site/index.html || true
       - name: Commit snapshot
         run: |
           git config user.name "export-bot"
